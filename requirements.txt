@@ -7,3 +7,4 @@ sqladmin[full]
 sqlacodegen
 itsdangerous
 python-multipart
+pydantic<2.0.0
