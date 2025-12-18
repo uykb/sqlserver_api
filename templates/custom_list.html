@@ -1,0 +1,227 @@
+{% extends "sqladmin/list.html" %}
+
+{% block head %}
+    {{ super() }}
+    <style>
+        /* Basic Custom CSS Beautification */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+        }
+        
+        /* Action Buttons Container */
+        .custom-actions {
+            margin-bottom: 15px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-custom {
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .btn-export {
+            background-color: #28a745;
+            color: white;
+        }
+        .btn-export:hover {
+            background-color: #218838;
+            color: white;
+        }
+
+        .btn-delete-bulk {
+            background-color: #dc3545;
+            color: white;
+        }
+        .btn-delete-bulk:hover {
+            background-color: #c82333;
+            color: white;
+        }
+        
+        .btn-delete-bulk:disabled {
+            background-color: #e2e6ea;
+            color: #6c757d;
+            cursor: not-allowed;
+        }
+
+        /* Checkbox styling */
+        .select-row {
+            transform: scale(1.2);
+            cursor: pointer;
+        }
+        
+        /* Loading Overlay */
+        #loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+        .spinner {
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #3498db;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <div id="loading-overlay">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- Inject Action Buttons -->
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                 <div class="custom-actions" id="custom-actions-container">
+                    <!-- Buttons will be moved here by JS -->
+                 </div>
+            </div>
+        </div>
+    </div>
+
+    {{ super() }}
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Helper to show/hide loading
+            const showLoading = () => document.getElementById('loading-overlay').style.display = 'flex';
+            const hideLoading = () => document.getElementById('loading-overlay').style.display = 'none';
+
+            // Identify current model from URL
+            const path = window.location.pathname;
+            let modelName = "";
+            if (path.includes("user")) modelName = "users";
+            else if (path.includes("item")) modelName = "items";
+
+            // Only inject controls if we identified the model
+            if (modelName) {
+                const container = document.querySelector('.card-header'); // usually where the 'New' button is
+                const actionContainer = document.createElement('div');
+                actionContainer.className = 'custom-actions';
+                
+                // 1. Export Button
+                const exportBtn = document.createElement('a');
+                exportBtn.href = `/api/${modelName}/export`;
+                exportBtn.className = 'btn btn-success btn-custom btn-export';
+                exportBtn.innerHTML = '<i class="fa-solid fa-file-csv me-2"></i> Export CSV';
+                exportBtn.style.marginRight = '10px';
+                
+                // 2. Bulk Delete Button
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'btn btn-danger btn-custom btn-delete-bulk';
+                deleteBtn.innerHTML = '<i class="fa-solid fa-trash me-2"></i> Bulk Delete';
+                deleteBtn.disabled = true; // Initially disabled
+                
+                // Append to existing toolbar or create new one
+                if (container) {
+                     container.appendChild(exportBtn);
+                     container.appendChild(deleteBtn);
+                }
+
+                // 3. Inject Checkboxes into Table
+                const table = document.querySelector('table');
+                if (table) {
+                    // Add Header Checkbox
+                    const thead = table.querySelector('thead tr');
+                    const th = document.createElement('th');
+                    th.innerHTML = '<input type="checkbox" id="select-all">';
+                    thead.insertBefore(th, thead.firstChild);
+
+                    // Add Row Checkboxes
+                    const rows = table.querySelectorAll('tbody tr');
+                    rows.forEach(row => {
+                        const td = document.createElement('td');
+                        // Get ID from the first cell (usually ID)
+                        const idCell = row.cells[0]; 
+                        const id = idCell ? idCell.innerText.trim() : null;
+                        
+                        if (id) {
+                            td.innerHTML = `<input type="checkbox" class="select-row" value="${id}">`;
+                        }
+                        row.insertBefore(td, row.firstChild);
+                    });
+
+                    // Checkbox Logic
+                    const selectAll = document.getElementById('select-all');
+                    const checkboxes = document.querySelectorAll('.select-row');
+
+                    function updateDeleteButton() {
+                        const checked = document.querySelectorAll('.select-row:checked');
+                        deleteBtn.disabled = checked.length === 0;
+                        deleteBtn.innerHTML = `<i class="fa-solid fa-trash me-2"></i> Delete (${checked.length})`;
+                    }
+
+                    if (selectAll) {
+                        selectAll.addEventListener('change', (e) => {
+                            checkboxes.forEach(cb => cb.checked = e.target.checked);
+                            updateDeleteButton();
+                        });
+                    }
+
+                    checkboxes.forEach(cb => {
+                        cb.addEventListener('change', updateDeleteButton);
+                    });
+
+                    // 4. Bulk Delete Action
+                    deleteBtn.addEventListener('click', async () => {
+                        const checked = document.querySelectorAll('.select-row:checked');
+                        const ids = Array.from(checked).map(cb => parseInt(cb.value));
+                        
+                        if (ids.length === 0) return;
+
+                        if (!confirm(`Are you sure you want to delete ${ids.length} items? This cannot be undone.`)) {
+                            return;
+                        }
+
+                        showLoading();
+
+                        try {
+                            const response = await fetch(`/api/${modelName}/bulk_delete`, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify(ids)
+                            });
+
+                            if (response.ok) {
+                                alert('Deletion successful!');
+                                window.location.reload();
+                            } else {
+                                alert('Error deleting items.');
+                            }
+                        } catch (error) {
+                            console.error('Error:', error);
+                            alert('An error occurred.');
+                        } finally {
+                            hideLoading();
+                        }
+                    });
+                }
+            }
+        });
+    </script>
+{% endblock %}
