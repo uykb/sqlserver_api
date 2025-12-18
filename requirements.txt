@@ -1,0 +1,9 @@
+fastapi
+uvicorn[standard]
+sqlalchemy
+pyodbc
+fastapi-crudrouter
+sqladmin[full]
+sqlacodegen
+itsdangerous
+python-multipart
