@@ -1,5 +1,5 @@
 # Use an official Python runtime as a parent image
-FROM python:3.10-slim
+FROM python:3.10-slim-bullseye
 
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE=1
@@ -8,7 +8,7 @@ ENV PYTHONUNBUFFERED=1
 # Install system dependencies required for MS SQL Server ODBC driver
 RUN apt-get update && apt-get install -y \
     curl \
-    gnupg2 \
+    gnupg \
     build-essential \
     unixodbc-dev \
     && rm -rf /var/lib/apt/lists/*
