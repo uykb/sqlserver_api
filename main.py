@@ -16,7 +16,7 @@ from pydantic import BaseModel
 
 # Import from our modules
 from database import engine, get_db
-from models import User, Item, Base
+from models import User, Item, Base, Pswd
 
 # --- Configuration ---
 ADMIN_USERNAME = os.getenv("ADMIN_USER", "admin")
@@ -57,6 +57,10 @@ class AdminAuth(AuthenticationBackend):
 authentication_backend = AdminAuth(secret_key=SECRET_KEY)
 
 # --- 1. Pydantic Schemas for API (CRUDRouter) ---
+
+class PswdResponse(BaseModel):
+    USR: int
+    NAME: str
 
 class UserCreate(BaseModel):
     username: str
@@ -102,6 +106,18 @@ item_router = SQLAlchemyCRUDRouter(
 
 app.include_router(user_router)
 app.include_router(item_router)
+
+@app.get("/api/pswd/{user_id}", response_model=PswdResponse, tags=["Custom Queries"])
+def get_pswd_name(user_id: int, db: Session = Depends(get_db)):
+    """
+    根据 USR (ID) 查询 PSWD 表中的用户名 (NAME)
+    """
+    result = db.query(Pswd).filter(Pswd.USR == user_id).first()
+    if not result:
+        # 如果未找到，返回 404
+        from fastapi import HTTPException
+        raise HTTPException(status_code=404, detail="User not found in PSWD table")
+    return {"USR": result.USR, "NAME": result.NAME}
 
 # --- Extra Features: Export & Bulk Delete ---
 

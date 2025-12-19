@@ -26,3 +26,10 @@ class Item(Base):
     owner_id = Column(Integer, ForeignKey('users.id'))
 
     owner = relationship("User", back_populates="items")
+
+class Pswd(Base):
+    __tablename__ = 'PSWD'
+
+    USR = Column(Integer, primary_key=True)
+    NAME = Column(String(255))
+
