@@ -65,8 +65,7 @@ admin = Admin(
     app, 
     engine, 
     authentication_backend=authentication_backend,
-    title="Dashboard",
-    templates_dir="templates"
+    title="Dashboard"
 )
 
 class PswdAdmin(ModelView, model=Pswd):
