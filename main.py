@@ -180,8 +180,20 @@ class ItemAdmin(ModelView, model=Item):
     name = "物品"
     name_plural = "物品管理"
 
+class PswdAdmin(ModelView, model=Pswd):
+    column_list = [Pswd.USR, Pswd.NAME]
+    column_searchable_list = [Pswd.NAME]
+    column_labels = {
+        Pswd.USR: "用户ID",
+        Pswd.NAME: "用户名称",
+    }
+    icon = "fa-solid fa-key"
+    name = "密码表"
+    name_plural = "密码表管理"
+
 admin.add_view(UserAdmin)
 admin.add_view(ItemAdmin)
+admin.add_view(PswdAdmin)
 
 @app.get("/")
 def read_root():
