@@ -78,10 +78,85 @@ uvicorn main:app --reload
 *   **API Docs**: [http://localhost:8000/docs](http://localhost:8000/docs)
 *   **Admin Panel**: [http://localhost:8000/admin](http://localhost:8000/admin)
 
-## Project Structure
+## 项目结构 (Project Structure)
 
-*   `main.py`: Application entry point, API routing, and Admin configuration.
-*   `models.py`: SQLAlchemy ORM models (table definitions).
-*   `database.py`: Database connection and session management.
-*   `templates/custom_list.html`: Custom template overriding default SQLAdmin list view for styles and JS logic.
-*   `.github/workflows`: CI/CD configuration for automatic Docker builds.
+经过模块化重构，项目结构更加清晰：
+
+*   `main.py`: **入口文件**。只负责组装各个模块，不包含具体业务逻辑。
+*   `routers/`: **API 路由文件夹**。所有的 API 业务逻辑都在这里。
+    *   `pswd.py`: PSWD 表的 API 接口示例。
+*   `schemas.py`: **数据模型 (Pydantic)**。定义 API 的输入/输出数据格式。
+*   `models.py`: **数据库模型 (SQLAlchemy)**。定义数据库表结构。
+*   `database.py`: 数据库连接配置。
+
+## 如何新增 API (How to Add API)
+
+本项目已采用模块化架构，新增 API 非常简单，只需遵循以下 4 步：
+
+### 第一步：定义数据模型 (schemas.py)
+在 `schemas.py` 中定义 API 返回或接收的数据格式（使用 Pydantic）。
+
+```python
+# schemas.py
+from pydantic import BaseModel
+
+# 定义一个返回给前端的数据结构
+class OrderResponse(BaseModel):
+    order_id: int
+    product_name: str
+    price: float
+```
+
+### 第二步：定义数据库表 (models.py)
+如果这是一张新表，需要在 `models.py` 中定义它（使用 SQLAlchemy）。
+
+```python
+# models.py
+from sqlalchemy import Column, Integer, String, Float
+from .database import Base
+
+class Order(Base):
+    __tablename__ = 'orders'
+    
+    id = Column(Integer, primary_key=True)
+    product = Column(String(50))
+    price = Column(Float)
+```
+
+### 第三步：编写 API 逻辑 (routers/xxx.py)
+在 `routers/` 文件夹下新建一个文件，例如 `order.py`，编写业务逻辑。
+
+```python
+# routers/order.py
+from fastapi import APIRouter, Depends
+from sqlalchemy.orm import Session
+from database import get_db
+from models import Order
+from schemas import OrderResponse
+
+# 定义路由，设置前缀和标签
+router = APIRouter(
+    prefix="/api/orders",
+    tags=["订单管理"]
+)
+
+@router.get("/{order_id}", response_model=OrderResponse)
+def get_order(order_id: int, db: Session = Depends(get_db)):
+    # 查询数据库
+    order = db.query(Order).filter(Order.id == order_id).first()
+    return {"order_id": order.id, "product_name": order.product, "price": order.price}
+```
+
+### 第四步：注册路由 (main.py)
+最后，在 `main.py` 中把写好的路由注册进去。
+
+```python
+# main.py
+# 1. 导入
+from routers import order
+
+# 2. 注册
+app.include_router(order.router)
+```
+
+**完成！** 重启服务后，您就可以在 `/docs` 文档中看到新接口，并直接调用了。
