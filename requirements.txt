@@ -3,7 +3,7 @@ uvicorn[standard]
 sqlalchemy<2.0.0
 pyodbc
 fastapi-crudrouter
-sqladmin[full]
+sqladmin[full]==0.16.1
 sqlacodegen
 itsdangerous
 python-multipart
