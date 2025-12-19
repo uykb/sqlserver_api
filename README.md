@@ -4,11 +4,10 @@ This project provides a complete solution for instantly generating a RESTful API
 
 ## Key Features
 
-*   **RESTful API**: Automatically generated CRUD endpoints (Create, Read, Update, Delete) for your database tables.
+*   **Modular API Architecture**: Clean and scalable project structure for managing multiple API endpoints.
 *   **Visual Admin Dashboard**: A user-friendly interface to manage your data (`/admin`).
-*   **Enhanced UI/UX**: Custom CSS beautification and improved interaction feedback (loading spinners, confirmation dialogs).
+*   **Enhanced UI/UX**: Custom CSS beautification and improved interaction feedback.
 *   **Data Export**: One-click **CSV Export** for your data.
-*   **Bulk Operations**: Support for **Bulk Delete** with multi-row selection.
 *   **Authentication**: Built-in session-based authentication for the Admin panel.
 *   **Docker Ready**: Fully containerized and automated builds via GitHub Actions.
 
