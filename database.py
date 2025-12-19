@@ -5,11 +5,18 @@ import os
 
 # Configuration for SQL Server
 # Read from Environment Variables with defaults
-SERVER = os.getenv("DB_HOST", "localhost")
+# Prioritize DB_SERVER as used in user's docker-compose, fallback to DB_HOST
+SERVER = os.getenv("DB_SERVER", os.getenv("DB_HOST", "localhost"))
 DATABASE = os.getenv("DB_NAME", "MyDatabase")
 USERNAME = os.getenv("DB_USER", "sa")
 PASSWORD = os.getenv("DB_PASSWORD", "YourStrongPassword123")
 DRIVER = os.getenv("DB_DRIVER", "ODBC Driver 17 for SQL Server")
+
+print(f"--- Database Connection Config ---")
+print(f"Server: {SERVER}")
+print(f"Database: {DATABASE}")
+print(f"User: {USERNAME}")
+print(f"----------------------------------")
 
 # Create connection string
 params = urllib.parse.quote_plus(
