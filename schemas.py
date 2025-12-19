@@ -2,7 +2,7 @@ from pydantic import BaseModel
 from datetime import datetime
 
 class PswdResponse(BaseModel):
-    USR: int
+    USR: str
     NAME: str
 
 class RefreshCustomerRequest(BaseModel):

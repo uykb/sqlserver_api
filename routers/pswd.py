@@ -10,9 +10,10 @@ router = APIRouter(
 )
 
 @router.get("/{user_id}", response_model=PswdResponse)
-def get_pswd_name(user_id: int, db: Session = Depends(get_db)):
+def get_pswd_name(user_id: str, db: Session = Depends(get_db)):
     """
     根据 USR (ID) 查询 PSWD 表中的用户名 (NAME)
+    支持纯数字、英文或英文加数字组合的用户ID
     """
     result = db.query(Pswd).filter(Pswd.USR == user_id).first()
     if not result:
