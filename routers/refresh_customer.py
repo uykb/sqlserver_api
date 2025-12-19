@@ -3,16 +3,16 @@ from sqlalchemy.orm import Session
 from sqlalchemy import text
 from datetime import datetime
 from database import get_db
-from schemas import RefreshCustomerRequest, RefreshCustomerResponse
+from schemas import RefreshCustomerResponse
 
 router = APIRouter(
     prefix="/api/refresh-customer-info",
     tags=["客户信息刷新"]
 )
 
-@router.post("", response_model=RefreshCustomerResponse)
+@router.post("/{ps_no}", response_model=RefreshCustomerResponse)
 def refresh_customer_info(
-    request: RefreshCustomerRequest,
+    ps_no: str,
     db: Session = Depends(get_db)
 ):
     """
@@ -23,15 +23,18 @@ def refresh_customer_info(
     2. 更新 tf_pss 表中的供应商产品编号和名称
     3. 从 prdt_cus 表中获取对应客户的产品信息
     4. 返回更新的记录数量
+    
+    参数:
+    - ps_no: 销售出库单号 (路径参数)
     """
     # 验证输入参数
-    if not request.ps_no or request.ps_no.strip() == "":
+    if not ps_no or ps_no.strip() == "":
         raise HTTPException(
             status_code=400,
             detail="销售出库单号不能为空"
         )
     
-    ps_no = request.ps_no.strip()
+    ps_no = ps_no.strip()
     
     try:
         # 执行更新SQL - 表名和字段名均为大写

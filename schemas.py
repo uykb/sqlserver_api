@@ -5,9 +5,6 @@ class PswdResponse(BaseModel):
     USR: str
     NAME: str
 
-class RefreshCustomerRequest(BaseModel):
-    ps_no: str
-
 class RefreshCustomerResponse(BaseModel):
     message: str
     ps_no: str
