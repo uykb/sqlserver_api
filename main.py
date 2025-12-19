@@ -140,19 +140,29 @@ class UserAdmin(ModelView, model=User):
     column_list = [User.id, User.username, User.email, User.is_active, User.created_at]
     column_searchable_list = [User.username, User.email]
     column_filters = [User.is_active, User.created_at]
+    column_labels = {
+        User.id: "ID",
+        User.username: "用户名",
+        User.email: "电子邮箱",
+        User.is_active: "激活状态",
+        User.created_at: "创建时间",
+    }
     icon = "fa-solid fa-user"
-    name = "User"
-    name_plural = "Users"
-    # list_template = "custom_list.html"
+    name = "用户"
+    name_plural = "用户管理"
 
 class ItemAdmin(ModelView, model=Item):
     column_list = [Item.id, Item.title, Item.owner_id]
     column_searchable_list = [Item.title]
     column_filters = [Item.owner_id]
+    column_labels = {
+        Item.id: "ID",
+        Item.title: "物品名称",
+        Item.owner_id: "所属用户ID",
+    }
     icon = "fa-solid fa-box"
-    name = "Item"
-    name_plural = "Items"
-    # list_template = "custom_list.html"
+    name = "物品"
+    name_plural = "物品管理"
 
 admin.add_view(UserAdmin)
 admin.add_view(ItemAdmin)
@@ -160,7 +170,7 @@ admin.add_view(ItemAdmin)
 @app.get("/")
 def read_root():
     return {
-        "message": "Welcome to the SQL Server API & Admin Demo!",
+        "message": "欢迎使用 SQL Server API & 后台管理演示系统！",
         "docs_url": "/docs",
         "admin_url": "/admin"
     }
