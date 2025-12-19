@@ -16,7 +16,7 @@ ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "admin123")
 SECRET_KEY = os.getenv("SECRET_KEY", "super-secret-key-change-me")
 
 # --- Database Initialization ---
-# Create tables in SQLite (since we are local now)
+# Create tables if they don't exist
 try:
     Base.metadata.create_all(bind=engine)
 except Exception as e:
@@ -55,7 +55,7 @@ app.include_router(pswd.router)
 @app.get("/")
 def read_root():
     return {
-        "message": "欢迎使用模块化后的 API 系统！数据已切换为本地 SQLite。",
+        "message": "欢迎使用模块化后的 SQL Server API 系统！",
         "docs_url": "/docs",
         "admin_url": "/admin"
     }
@@ -80,9 +80,9 @@ class PswdAdmin(ModelView, model=Pswd):
     name = "密码表"
     name_plural = "密码表管理"
     
-    # Read-Only Configuration to protect production data
-    can_create = False
-    can_edit = False
-    can_delete = False
+    # Enable CRUD operations
+    can_create = True
+    can_edit = True
+    can_delete = True
 
 admin.add_view(PswdAdmin)
