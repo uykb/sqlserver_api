@@ -143,7 +143,7 @@ class UserAdmin(ModelView, model=User):
     icon = "fa-solid fa-user"
     name = "User"
     name_plural = "Users"
-    list_template = "custom_list.html"
+    # list_template = "custom_list.html"
 
 class ItemAdmin(ModelView, model=Item):
     column_list = [Item.id, Item.title, Item.owner_id]
@@ -152,7 +152,7 @@ class ItemAdmin(ModelView, model=Item):
     icon = "fa-solid fa-box"
     name = "Item"
     name_plural = "Items"
-    list_template = "custom_list.html"
+    # list_template = "custom_list.html"
 
 admin.add_view(UserAdmin)
 admin.add_view(ItemAdmin)
