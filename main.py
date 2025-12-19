@@ -8,7 +8,7 @@ from starlette.middleware.sessions import SessionMiddleware
 # Import from our modules
 from database import engine
 from models import Base, Pswd
-from routers import pswd
+from routers import pswd, refresh_customer
 
 # --- Configuration ---
 ADMIN_USERNAME = os.getenv("ADMIN_USER", "admin")
@@ -51,6 +51,7 @@ authentication_backend = AdminAuth(secret_key=SECRET_KEY)
 
 # --- Register Routers (Modularized API) ---
 app.include_router(pswd.router)
+app.include_router(refresh_customer.router)
 
 @app.get("/")
 def read_root():

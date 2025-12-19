@@ -1,5 +1,15 @@
 from pydantic import BaseModel
+from datetime import datetime
 
 class PswdResponse(BaseModel):
     USR: int
     NAME: str
+
+class RefreshCustomerRequest(BaseModel):
+    ps_no: str
+
+class RefreshCustomerResponse(BaseModel):
+    message: str
+    ps_no: str
+    updated_records: int
+    timestamp: datetime
