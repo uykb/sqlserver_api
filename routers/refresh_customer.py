@@ -34,14 +34,14 @@ def refresh_customer_info(
     ps_no = request.ps_no.strip()
     
     try:
-        # 执行更新SQL
+        # 执行更新SQL - 表名改为大写
         sql = text("""
             update a 
             set a.prd_no_sup = b.PRD_NO_SUP,
                 a.prd_name_sup = b.prd_name_sup
-            from tf_pss a
-            left join mf_pss c on a.ps_no = c.ps_no
-            left join prdt_cus b on a.prd_no = b.prd_no and b.cus_no = c.cus_no
+            from TF_PSS a
+            left join MF_PSS c on a.ps_no = c.ps_no
+            left join PRDT_CUS b on a.prd_no = b.prd_no and b.cus_no = c.cus_no
             where a.ps_no = :ps_no
         """)
         
@@ -55,7 +55,7 @@ def refresh_customer_info(
         # 如果更新记录数为0，可能是单号不存在
         if updated_records == 0:
             # 检查单号是否存在
-            check_sql = text("SELECT COUNT(*) as count FROM mf_pss WHERE ps_no = :ps_no")
+            check_sql = text("SELECT COUNT(*) as count FROM MF_PSS WHERE ps_no = :ps_no")
             check_result = db.execute(check_sql, {"ps_no": ps_no}).fetchone()
             if check_result and check_result.count == 0:
                 raise HTTPException(
