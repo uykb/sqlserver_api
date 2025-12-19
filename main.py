@@ -79,5 +79,10 @@ class PswdAdmin(ModelView, model=Pswd):
     icon = "fa-solid fa-key"
     name = "密码表"
     name_plural = "密码表管理"
+    
+    # Read-Only Configuration to protect production data
+    can_create = False
+    can_edit = False
+    can_delete = False
 
 admin.add_view(PswdAdmin)
