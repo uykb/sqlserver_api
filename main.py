@@ -23,7 +23,14 @@ try:
 except Exception as e:
     print(f"Warning: Could not connect to database to create tables. Error: {e}")
 
-app = FastAPI(title="SQL Server API & Admin Demo (Modularized)")
+app = FastAPI(
+    title="SQL Server API & Admin Demo (Modularized)",
+    swagger_ui_parameters={
+        "defaultModelsExpandDepth": -1,
+        "docExpansion": "none",
+        "displayRequestDuration": True
+    }
+)
 templates = Jinja2Templates(directory="templates")
 
 # Add Session Middleware for Authentication
