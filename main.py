@@ -1,5 +1,6 @@
 import os
 from fastapi import FastAPI
+from fastapi.templating import Jinja2Templates
 from sqladmin import Admin, ModelView
 from sqladmin.authentication import AuthenticationBackend
 from starlette.requests import Request
@@ -7,8 +8,8 @@ from starlette.middleware.sessions import SessionMiddleware
 
 # Import from our modules
 from database import engine
-from models import Base, Pswd
-from routers import pswd, refresh_customer
+from models import Base
+from routers import refresh_customer
 
 # --- Configuration ---
 ADMIN_USERNAME = os.getenv("ADMIN_USER", "admin")
@@ -23,6 +24,7 @@ except Exception as e:
     print(f"Warning: Could not connect to database to create tables. Error: {e}")
 
 app = FastAPI(title="SQL Server API & Admin Demo (Modularized)")
+templates = Jinja2Templates(directory="templates")
 
 # Add Session Middleware for Authentication
 app.add_middleware(SessionMiddleware, secret_key=SECRET_KEY)
@@ -50,16 +52,11 @@ class AdminAuth(AuthenticationBackend):
 authentication_backend = AdminAuth(secret_key=SECRET_KEY)
 
 # --- Register Routers (Modularized API) ---
-app.include_router(pswd.router)
 app.include_router(refresh_customer.router)
 
 @app.get("/")
-def read_root():
-    return {
-        "message": "欢迎使用模块化后的 SQL Server API 系统！",
-        "docs_url": "/docs",
-        "admin_url": "/admin"
-    }
+def read_root(request: Request):
+    return templates.TemplateResponse("index.html", {"request": request})
 
 # --- Setup Visual Admin Interface (SQLAdmin) ---
 admin = Admin(
@@ -69,20 +66,4 @@ admin = Admin(
     title="Dashboard"
 )
 
-class PswdAdmin(ModelView, model=Pswd):
-    column_list = [Pswd.USR, Pswd.NAME]
-    column_searchable_list = [Pswd.NAME]
-    column_labels = {
-        Pswd.USR: "用户ID",
-        Pswd.NAME: "用户名称",
-    }
-    icon = "fa-solid fa-key"
-    name = "密码表"
-    name_plural = "密码表管理"
-    
-    # Enable CRUD operations
-    can_create = True
-    can_edit = True
-    can_delete = True
 
-admin.add_view(PswdAdmin)
